@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, stat } from "node:fs/promises";
 import test from "node:test";
 
 import { permanentRedirects, securityHeaders } from "../next.config";
@@ -69,6 +69,27 @@ test("homepage places qualified evidence immediately after the hero", async () =
   assert.ok(heroEnd >= 0);
   assert.ok(evidence > heroEnd);
   assert.ok(evidence < pathway);
+});
+
+test("homepage uses the approved coordinated-care hero asset", async () => {
+  const assetPath = "public/images/capacityplus-coordinated-care.webp";
+  const [source, asset, metadata] = await Promise.all([
+    readFile("src/app/page.tsx", "utf8"),
+    readFile(assetPath),
+    stat(assetPath),
+  ]);
+
+  assert.match(source, /capacityplus-coordinated-care\.webp/);
+  assert.match(
+    source,
+    /alt="Conceptual image of primary-care professionals coordinating a blood-pressure pathway"/,
+  );
+  assert.equal(asset.subarray(0, 4).toString("ascii"), "RIFF");
+  assert.equal(asset.subarray(8, 12).toString("ascii"), "WEBP");
+  assert.ok(
+    metadata.size <= 250_000,
+    "Hero asset must remain at or below 250 KB",
+  );
 });
 
 test("header and footer use the tightly cropped web logo asset", async () => {

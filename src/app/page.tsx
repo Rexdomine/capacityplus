@@ -36,11 +36,12 @@ export default function Home() {
           </div>
           <Image
             className="hero-image"
-            src="/images/flow-of-care.jpg"
-            width={720}
-            height={520}
+            src="/images/capacityplus-coordinated-care.webp"
+            width={1200}
+            height={900}
+            sizes="(min-width: 1024px) 48vw, calc(100vw - 2rem)"
             priority
-            alt="Primary care professionals working together around a care pathway"
+            alt="Conceptual image of primary-care professionals coordinating a blood-pressure pathway"
           />
         </div>
       </section>

@@ -72,6 +72,8 @@ Always label these as **single-site St Giles pilot results, approximately 8,000 
 - Production build passes and generates the expected static routes.
 - Existing Biome baseline does not pass: 56 errors and 5 warnings, largely formatting/import-order issues plus accessibility findings in the contact form. These were preserved rather than silently rewriting the supplied source during import.
 - Source is committed and pushed to the private GitHub repository.
+- The Phase 1 client-brief refactor is implemented on `refactor/client-brief-phase-1`; it remains a review candidate and has not been launched to production.
+- The Phase 1 homepage hero now uses a publication-reviewed conceptual coordinated-care image showing equal primary-care/pharmacy collaboration around a blood-pressure pathway. The optimized 1200×900 WebP is approximately 97 KB, has truthful conceptual alt text, and replaced the malformed text-heavy illustration. Exact viewport QA passed at 390×844, 768×1024, 1366×768 and 1440×900.
 - Production baseline deployed on Vercel on 2026-07-23.
 - Stable production URL: `https://capacityplus.vercel.app`
 - The Vercel API reports the production deployment as `READY`.
@@ -134,5 +136,6 @@ Always label these as **single-site St Giles pilot results, approximately 8,000 
 
 ## Handoff log
 
+- **2026-07-23 — Homepage hero brand-story refresh:** Replaced the malformed generic pathway illustration with a publication-reviewed conceptual image of equal GP–community-pharmacy coordination around a blood-pressure pathway. Added a binary media contract, optimized the asset to a 1200×900 approximately 97 KB WebP, and verified content, Biome, production build and 32 Playwright checks across mobile/tablet/laptop/desktop. No production deployment was performed.
 - **2026-07-23 — Client brief analysis:** Extracted and visually verified all five pages of the 26 June client brief, mapped it against the current source/live baseline, and recorded the canonical business proposition, brand tone, locked evidence, clinical wording boundaries, phased scope, release gates and missing client inputs. No website source or deployment was changed.
 - **2026-07-23 — Vercel baseline deployment:** Created the separate `capacityplus` project under the Capacity team using the dedicated CapacityPlus credential, deployed the exact committed Git baseline from a clean archive, verified production `READY`, checked all expected routes, and recorded the permanent credential/account separation rule without storing the token.
