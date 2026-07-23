@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: "Integrated GP and community pharmacy pathways",
   description:
     "Capacity+ coordinates integrated GP–community-pharmacy working to increase primary-care capacity.",
+  alternates: { canonical: "/" },
 };
 
 export default function Home() {

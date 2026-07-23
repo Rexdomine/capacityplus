@@ -4,8 +4,13 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const scanRoots = ["src/app", "src/components", "src/content"];
-const extensions = new Set([".ts", ".tsx", ".js", ".jsx", ".md", ".css"]);
+const builtMode = process.argv.includes("--built");
+const scanRoots = builtMode
+  ? [".next/server/app"]
+  : ["src/app", "src/components", "src/content"];
+const extensions = builtMode
+  ? new Set([".html"])
+  : new Set([".ts", ".tsx", ".js", ".jsx", ".md", ".css"]);
 
 // Encoded to ensure this validator does not fail by containing the terms it guards.
 const forbidden = [
@@ -55,6 +60,12 @@ const qualification = [
   "year one",
 ];
 
+if (builtMode && files.length === 0) {
+  errors.push(
+    "No built HTML found. Run the production build before --built validation.",
+  );
+}
+
 for (const file of files) {
   const content = await readFile(path.join(root, file), "utf8");
   const visibleText = content
@@ -98,5 +109,5 @@ if (errors.length > 0) {
   process.exit(1);
 }
 console.log(
-  `Public content validation passed (${files.length} files scanned).`,
+  `Public content validation passed (${files.length} ${builtMode ? "built HTML" : "source"} files scanned).`,
 );

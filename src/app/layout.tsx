@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { SITE_URL } from "@/lib/site-url";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Capacity+ | Integrated primary care pathways",
     template: "%s | Capacity+",

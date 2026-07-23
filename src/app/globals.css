@@ -433,7 +433,7 @@ textarea {
   margin: 0;
 }
 
-@media (min-width: 48rem) {
+@media (min-width: 64rem) {
   .desktop-nav {
     display: flex;
   }

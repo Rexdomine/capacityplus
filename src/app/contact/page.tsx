@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Book a call",
   description:
     "Book a call with Capacity+ to discuss integrated GP–community-pharmacy working in your local pathway.",
+  alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {

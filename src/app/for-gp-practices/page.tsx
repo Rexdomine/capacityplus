@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "For GP practices",
   description:
     "Explore a governed, trackable approach to integrated GP–community-pharmacy working with Capacity+.",
+  alternates: { canonical: "/for-gp-practices" },
 };
 
 export default function ForGpPracticesPage() {

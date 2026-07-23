@@ -6,8 +6,10 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const links = [
+  { href: "/", label: "Home" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/for-gp-practices", label: "For GP practices" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Header() {

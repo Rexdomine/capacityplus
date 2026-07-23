@@ -8,7 +8,8 @@ import {
 export const metadata: Metadata = {
   title: "How it works",
   description:
-    "See how Capacity+ coordinates referrals, delivery and outcomes between GP practices and community pharmacies.",
+    "See how Capacity+ coordinates referrals, community-pharmacy delivery, outcomes and clinical oversight.",
+  alternates: { canonical: "/how-it-works" },
 };
 
 const steps = [

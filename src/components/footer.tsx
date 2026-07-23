@@ -24,10 +24,16 @@ export function Footer() {
           <h2>Explore</h2>
           <ul>
             <li>
+              <Link href="/">Home</Link>
+            </li>
+            <li>
               <Link href="/how-it-works">How it works</Link>
             </li>
             <li>
               <Link href="/for-gp-practices">For GP practices</Link>
+            </li>
+            <li>
+              <Link href="/contact">Contact</Link>
             </li>
             <li>
               <Link href="/contact">Book a call</Link>
