@@ -35,6 +35,22 @@ for (const route of publicRoutes) {
     const response = await page.goto(route.path, { waitUntil: "networkidle" });
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveCount(1);
+    const header = page.locator(".site-header");
+    await expect(header).toBeVisible();
+    await expect(header).toHaveCSS("background-color", "rgb(255, 255, 255)");
+    const headerAtPageTop = await header.boundingBox();
+    expect(headerAtPageTop).not.toBeNull();
+    expect(headerAtPageTop?.y).toBe(0);
+    expect(headerAtPageTop?.height).toBeGreaterThan(64);
+    expect(
+      await page.evaluate(() =>
+        Boolean(
+          document
+            .elementFromPoint(window.innerWidth / 2, 1)
+            ?.closest(".site-header"),
+        ),
+      ),
+    ).toBe(true);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
       route.canonical,
@@ -49,7 +65,23 @@ for (const route of publicRoutes) {
       .getByRole("link", { name: "Book a call", exact: true })
       .first()
       .waitFor();
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+    await expect(header).toBeInViewport();
+    const stickyHeader = await header.boundingBox();
+    expect(stickyHeader).not.toBeNull();
+    expect(stickyHeader?.y).toBe(0);
+    expect(
+      await page.evaluate(() =>
+        Boolean(
+          document
+            .elementFromPoint(window.innerWidth / 2, 1)
+            ?.closest(".site-header"),
+        ),
+      ),
+    ).toBe(true);
     const brokenImages = await page
       .locator("img")
       .evaluateAll(async (images) => {

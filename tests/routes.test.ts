@@ -81,3 +81,13 @@ test("header and footer use the tightly cropped web logo asset", async () => {
   assert.match(footer, /capacity-logo-web\.png/);
   await access("public/images/capacity-logo-web.png");
 });
+
+test("sticky header uses a Safari-safe opaque paint layer", async () => {
+  const stylesheet = await readFile("src/app/globals.css", "utf8");
+  const headerRule = stylesheet.match(/\.site-header\s*\{(?<rule>[^}]*)\}/s);
+
+  assert.ok(headerRule?.groups?.rule, "Expected a .site-header CSS rule");
+  assert.match(headerRule.groups.rule, /background:\s*var\(--white\)/);
+  assert.match(headerRule.groups.rule, /isolation:\s*isolate/);
+  assert.doesNotMatch(headerRule.groups.rule, /backdrop-filter/);
+});
