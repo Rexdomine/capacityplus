@@ -1,12 +1,13 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site-url";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/private/', '/admin/'], // Add any paths you want to disallow
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/speaking", "/privacy", "/cookies", "/terms"],
     },
-    sitemap: 'https://www.capacityx.co.uk/sitemap.xml',
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

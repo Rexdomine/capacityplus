@@ -1,32 +1,114 @@
-import type { Metadata } from 'next';
-import HomeClient from './home-client';
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  BookCallLink,
+  ClinicalResponsibility,
+  EvidenceStrip,
+  FinalCta,
+} from "@/components/site-sections";
 
 export const metadata: Metadata = {
-  title: 'Home',
+  title: "Integrated GP and community pharmacy pathways",
   description:
-    'Eliminate clinician burnout, streamline workflows, and build sustainable practice infrastructure with our integrated solutions for GPs and pharmacies.',
-  keywords: [
-    'primary care capacity',
-    'GP pharmacy integration',
-    'healthcare workflow optimization',
-    'clinician burnout solutions',
-    'practice infrastructure',
-  ],
-  openGraph: {
-    title: 'Capacity+ | Transform Primary Care',
-    description:
-      'Eliminate clinician burnout, streamline workflows, and build sustainable practice infrastructure.',
-    images: [
-      {
-        url: '/images/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Capacity+ Healthcare Services',
-      },
-    ],
-  },
+    "Capacity+ coordinates integrated GP–community-pharmacy working to increase primary-care capacity.",
+  alternates: { canonical: "/" },
 };
 
 export default function Home() {
-  return <HomeClient />;
+  return (
+    <main id="main-content">
+      <section className="hero">
+        <div className="container hero-grid">
+          <div>
+            <p className="eyebrow">Integrated primary care</p>
+            <h1>More capacity through coordinated local care</h1>
+            <p className="lede">
+              Capacity+ coordinates integrated GP–community-pharmacy working to
+              increase primary-care capacity.
+            </p>
+            <div className="actions">
+              <BookCallLink />
+              <Link className="text-link" href="/how-it-works">
+                See how it works <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+          <Image
+            className="hero-image"
+            src="/images/capacityplus-coordinated-care.webp"
+            width={1200}
+            height={900}
+            sizes="(min-width: 1024px) 48vw, calc(100vw - 2rem)"
+            priority
+            alt="Conceptual image of primary-care professionals coordinating a blood-pressure pathway"
+          />
+        </div>
+      </section>
+
+      <EvidenceStrip />
+
+      <section className="section" aria-labelledby="one-pathway">
+        <div className="container split">
+          <div>
+            <p className="eyebrow">One coordinated pathway</p>
+            <h2 id="one-pathway">
+              Make the best use of skills across primary care
+            </h2>
+          </div>
+          <div>
+            <p>
+              Capacity+ connects referral, delivery and outcome workflows so
+              each organisation can act with clarity. Hypertension case-finding
+              and ambulatory blood pressure monitoring (ABPM) are the proven
+              backbone today—not the limit of the model.
+            </p>
+            <p className="statement">
+              Transparent by design. Every referral. Every outcome. Fully
+              trackable.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section tinted" aria-labelledby="audiences">
+        <div className="container">
+          <p className="eyebrow">Built for local systems</p>
+          <h2 id="audiences">Shared value across the partnership</h2>
+          <div className="cards three">
+            <article>
+              <h3>GP practices</h3>
+              <p>
+                Release clinical time while retaining oversight of diagnosis,
+                prescribing and patient care.
+              </p>
+              <Link className="text-link" href="/for-gp-practices">
+                For GP practices <span aria-hidden="true">→</span>
+              </Link>
+            </article>
+            <article>
+              <h3>Community pharmacies</h3>
+              <p>
+                Receive structured referrals and deliver eligible activity under
+                NHS service specifications.
+              </p>
+            </article>
+            <article>
+              <h3>NHS commissioners</h3>
+              <p>
+                Support consistent pathways with visible referral and outcome
+                information across local teams.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section className="section">
+        <div className="container narrow">
+          <ClinicalResponsibility />
+        </div>
+      </section>
+      <FinalCta />
+    </main>
+  );
 }
