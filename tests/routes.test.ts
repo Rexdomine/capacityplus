@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { access, readFile, stat } from "node:fs/promises";
 import test from "node:test";
 
@@ -91,7 +92,7 @@ test("homepage uses the approved coordinated-care hero asset", async () => {
   );
 });
 
-test("header and footer use the tightly cropped web logo asset", async () => {
+test("header and footer use the shared website logo asset", async () => {
   const [header, footer] = await Promise.all([
     readFile("src/components/header.tsx", "utf8"),
     readFile("src/components/footer.tsx", "utf8"),
@@ -100,6 +101,16 @@ test("header and footer use the tightly cropped web logo asset", async () => {
   assert.match(header, /capacity-logo-web\.png/);
   assert.match(footer, /capacity-logo-web\.png/);
   await access("public/images/capacity-logo-web.png");
+});
+
+test("website uses the approved complete-cross Capacity+ logo", async () => {
+  const asset = await readFile("public/images/capacity-logo-web.png");
+  const checksum = createHash("sha256").update(asset).digest("hex");
+
+  assert.equal(
+    checksum,
+    "87b6aa80cd610a53ff21d1d76e858fe80ca68ecc2ddf8d7ff988fbf589c99164",
+  );
 });
 
 test("sticky header uses a Safari-safe opaque paint layer", async () => {
