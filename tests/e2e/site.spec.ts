@@ -12,6 +12,10 @@ const publicRoutes = [
     canonical: "https://capacityplus.vercel.app/for-gp-practices",
   },
   {
+    path: "/about",
+    canonical: "https://capacityplus.vercel.app/about",
+  },
+  {
     path: "/contact",
     canonical: "https://capacityplus.vercel.app/contact",
   },
@@ -112,7 +116,13 @@ test("navigation exposes approved labels and keyboard-safe mobile menu", async (
 }, testInfo) => {
   await page.goto("/", { waitUntil: "networkidle" });
   const viewportWidth = testInfo.project.use.viewport?.width ?? 1440;
-  const links = ["Home", "How it works", "For GP practices", "Contact"];
+  const links = [
+    "Home",
+    "How it works",
+    "For GP practices",
+    "About",
+    "Contact",
+  ];
 
   if (viewportWidth < 1024) {
     const openButton = page.getByRole("button", { name: "Open menu" });
@@ -147,7 +157,6 @@ test("legacy routes are permanent redirects to approved destinations", async ({
     ["/services/digital-gp-pharmacy-integration", "/how-it-works"],
     ["/services/life-leadership-coaching", "/"],
     ["/services/social-media-visibility", "/"],
-    ["/about", "/"],
   ] as const;
 
   for (const [source, destination] of redirects) {
@@ -155,6 +164,64 @@ test("legacy routes are permanent redirects to approved destinations", async ({
     expect(response.status()).toBe(308);
     expect(response.headers().location).toBe(destination);
   }
+});
+
+test("About presents the real team photos and qualified pilot evidence", async ({
+  page,
+}) => {
+  await page.goto("/about", { waitUntil: "networkidle" });
+
+  for (const name of [
+    "Onosenadia (Os) Joseph-Ebare",
+    "Radha Muthusamy",
+    "Ben Paddick",
+  ]) {
+    await expect(
+      page.getByRole("heading", { name, exact: true }),
+    ).toBeVisible();
+    const photo = page.getByRole("img", { name, exact: true });
+    await photo.scrollIntoViewIfNeeded();
+    await expect(photo).toBeVisible();
+    await expect
+      .poll(() =>
+        photo.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+      )
+      .toBeGreaterThan(0);
+    expect(
+      await photo.evaluate(
+        (image) =>
+          (image as HTMLImageElement).naturalWidth ===
+          (image as HTMLImageElement).naturalHeight,
+      ),
+    ).toBe(true);
+  }
+
+  await expect(
+    page.getByText("single-site St Giles pilot", { exact: false }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "51 of 52 patients completed the pathway without needing direct GP intervention",
+      { exact: false },
+    ),
+  ).toBeVisible();
+  const clinicalCopy = page.locator(".about-intro-copy");
+  await expect(
+    clinicalCopy.getByText("GP oversight of diagnosis and treatment", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(
+    clinicalCopy.getByText("does not diagnose or prescribe", { exact: false }),
+  ).toBeVisible();
+  await expect(
+    clinicalCopy.getByText("registered pharmacy professionals", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(
+    clinicalCopy.getByText("prescription change requires", { exact: false }),
+  ).toBeVisible();
 });
 
 test("contact form is explicitly inert and retains the enquiry", async ({

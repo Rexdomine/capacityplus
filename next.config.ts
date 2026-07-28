@@ -16,7 +16,6 @@ export const permanentRedirects = [
     destination: "/",
     permanent: true,
   },
-  { source: "/about", destination: "/", permanent: true },
 ] as const;
 
 const contentSecurityPolicy = [

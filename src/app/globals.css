@@ -433,6 +433,94 @@ textarea {
   margin: 0;
 }
 
+.about-hero {
+  position: relative;
+  overflow: hidden;
+}
+.about-hero::after {
+  position: absolute;
+  right: max(-5rem, calc((100vw - 72rem) / 2));
+  bottom: -8rem;
+  width: 22rem;
+  height: 22rem;
+  border: 4rem solid rgba(15, 118, 110, 0.08);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+.about-hero .container {
+  position: relative;
+  z-index: 1;
+}
+.about-intro {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+.about-intro-copy {
+  max-width: 45rem;
+}
+.about-intro-copy p:last-child {
+  margin-bottom: 0;
+}
+.about-evidence .metrics div:last-child {
+  border-left-color: #5eead4;
+}
+.about-evidence .fine-print {
+  max-width: 52rem;
+  color: #d9e7eb;
+}
+.team-heading {
+  margin-inline: 0;
+}
+.team-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+.team-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: var(--white);
+  box-shadow: 0 14px 36px rgba(5, 34, 53, 0.07);
+}
+.team-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--surface);
+}
+.team-card-body {
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+.team-role {
+  margin-bottom: 0.45rem;
+  color: var(--teal);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.team-card h3 {
+  margin-bottom: 1.15rem;
+  font-size: 1.45rem;
+}
+.team-card-body p:not(.team-role) {
+  color: var(--muted);
+}
+.team-card-body p:last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: 40rem) {
+  .team-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 64rem) {
   .desktop-nav {
     display: flex;
@@ -449,6 +537,13 @@ textarea {
   .contact-grid {
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
+  }
+  .about-intro {
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 5rem;
+  }
+  .team-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .cards.three,
   .metrics {

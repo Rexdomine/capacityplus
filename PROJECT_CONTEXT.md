@@ -55,6 +55,7 @@ Always label these as **single-site St Giles pilot results, approximately 8,000 
 ### Required client inputs before final implementation
 
 - Final Home, How it works and For GP Practices copy from Os.
+- **Team content received 2026-07-24:** approved profile copy and supplied square headshots for Data Protection Officer Radha Muthusamy and IT Delivery Partner Ben Paddick, plus replacement founder bio for Onosenadia (Os) Joseph-Ebare. The existing repository founder image is available, but its informal selfie style does not visually match the two supplied professional headshots; confirm reuse or request a new founder headshot before final publication if consistent presentation is required.
 - Canonical Capacity+ email and company-only social links.
 - Confirmed booking URL, secure form processor/inbox and privacy-retention details.
 - Approved legal entity/controller details, ICO details and real Privacy/Cookie/Terms copy.
@@ -70,13 +71,16 @@ Always label these as **single-site St Giles pilot results, approximately 8,000 
 - Source was scanned for common credential/token patterns; no `.env` files or apparent committed secrets were found.
 - Removed the source archive's `.DS_Store` and added a production-appropriate `.gitignore` before publication.
 - Production build passes and generates the expected static routes.
-- Existing Biome baseline does not pass: 56 errors and 5 warnings, largely formatting/import-order issues plus accessibility findings in the contact form. These were preserved rather than silently rewriting the supplied source during import.
+- The original imported source carried 56 Biome errors and 5 warnings; the merged Phase 1 refactor has cleared that baseline, and the current Biome check passes.
 - Source is committed and pushed to the private GitHub repository.
-- The Phase 1 client-brief refactor is implemented on `refactor/client-brief-phase-1`; it remains a review candidate and has not been launched to production.
+- The Phase 1 client-brief refactor is merged into `main`; production still serves the prior baseline until a separately approved launch.
+- A focused About/Team update is implemented on `feat/capacityplus-team`: new `/about` route, header/footer/sitemap integration, three client-approved profiles, optimized 640×640 WebP portraits, evidence-safe pilot wording and explicit clinical-governance boundaries. The canonical local release gate passes: production audit has no high-severity findings (one low advisory), 16 source tests pass, content validation and Biome pass, Next.js produces 14 static pages, built-content validation passes, and 40 Playwright checks pass across 390×844, 768×1024, 1366×768 and 1440×900.
 - The Phase 1 homepage hero now uses a publication-reviewed conceptual coordinated-care image showing equal primary-care/pharmacy collaboration around a blood-pressure pathway. The optimized 1200×900 WebP is approximately 97 KB, has truthful conceptual alt text, and replaced the malformed text-heavy illustration. Exact viewport QA passed at 390×844, 768×1024, 1366×768 and 1440×900.
 - Production baseline deployed on Vercel on 2026-07-23.
 - Stable production URL: `https://capacityplus.vercel.app`
 - The Vercel API reports the production deployment as `READY`.
+- Capacity+ logo brand-story and usage guidelines v1.0 are packaged outside the repository at `/opt/data/deliverables/capacityplus-brand-guidelines-2026-07-23/`. The delivery set includes the PDF, logo assets, contact sheet and ZIP package.
+- A real Gmail draft is saved in `rextechng@gmail.com` for `j.jebare@gmail.com`, subject **Capacity+ logo brand guidelines and outstanding website inputs**. It contains the guidelines PDF attachment and the outstanding client-input request. It remains unsent and requires Rex's review/approval before sending.
 
 ## Vercel deployment boundary
 
@@ -136,6 +140,8 @@ Always label these as **single-site St Giles pilot results, approximately 8,000 
 
 ## Handoff log
 
+- **2026-07-24 — Capacity+ Team implementation candidate:** Read the forwarded Gmail message `Fwd: Capacity+ Team` in the verified non-CounterFix account `rextechng@gmail.com`; preserved the supplied inputs outside Git under `/opt/data/private/capacityplus/client-inputs/2026-07-24-capacity-team/`; and implemented a new evidence-safe `/about` experience with Onosenadia (Os) Joseph-Ebare, Radha Muthusamy and Ben Paddick. Added responsive team cards, optimized 640×640 metadata-free WebP portraits, About navigation/footer/sitemap/canonical coverage, and removed the retired redirect. Strengthened appliance-review wording to preserve host-practice governance, protocol working and pharmacist/prescriber sign-off. Canonical local gate passes with 16 source tests, content validation, Biome, production build/built validation and 40 Playwright checks across four viewports. No email was sent, no PR was merged, and production was not changed.
+- **2026-07-23 — Paused after logo-guidelines delivery preparation:** Completed the Capacity+ logo brand story and practical usage-guidelines package, including the client PDF, export assets, contact sheet and ZIP bundle under `/opt/data/deliverables/capacityplus-brand-guidelines-2026-07-23/`. Saved and read-back verified an unsent Gmail draft from Rex's account to `j.jebare@gmail.com`, with the PDF attached and a request for outstanding website/legal inputs. No email was sent, no PR was merged, and no production deployment was performed. Resume point: Rex reviews the Gmail draft and attachment; send only with explicit approval, then await client feedback/inputs before further website or brand changes.
 - **2026-07-23 — Homepage hero brand-story refresh:** Replaced the malformed generic pathway illustration with a publication-reviewed conceptual image of equal GP–community-pharmacy coordination around a blood-pressure pathway. Added a binary media contract, optimized the asset to a 1200×900 approximately 97 KB WebP, and verified content, Biome, production build and 32 Playwright checks across mobile/tablet/laptop/desktop. No production deployment was performed.
 - **2026-07-23 — Client brief analysis:** Extracted and visually verified all five pages of the 26 June client brief, mapped it against the current source/live baseline, and recorded the canonical business proposition, brand tone, locked evidence, clinical wording boundaries, phased scope, release gates and missing client inputs. No website source or deployment was changed.
 - **2026-07-23 — Vercel baseline deployment:** Created the separate `capacityplus` project under the Capacity team using the dedicated CapacityPlus credential, deployed the exact committed Git baseline from a clean archive, verified production `READY`, checked all expected routes, and recorded the permanent credential/account separation rule without storing the token.

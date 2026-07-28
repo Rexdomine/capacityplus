@@ -5,6 +5,7 @@ const publicRoutes = [
   "",
   "/how-it-works",
   "/for-gp-practices",
+  "/about",
   "/contact",
 ] as const;
 
