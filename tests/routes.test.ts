@@ -23,7 +23,6 @@ test("legacy public routes permanently redirect to approved destinations", () =>
       destination: "/",
       permanent: true,
     },
-    { source: "/about", destination: "/", permanent: true },
   ]);
 });
 
@@ -53,10 +52,10 @@ test("site URL normalization is safe and removes path trailing slashes", () => {
   );
 });
 
-test("sitemap contains only the four approved public routes", () => {
+test("sitemap contains the five approved public routes, including About", () => {
   assert.deepEqual(
     sitemap().map(({ url }) => new URL(url).pathname),
-    ["/", "/how-it-works", "/for-gp-practices", "/contact"],
+    ["/", "/how-it-works", "/for-gp-practices", "/about", "/contact"],
   );
 });
 

@@ -29,6 +29,9 @@ test-results/
 # Deployment metadata
 .vercel/
 
+# Local Hermes plans and QA artifacts
+.hermes/
+
 # TypeScript
 *.tsbuildinfo
 

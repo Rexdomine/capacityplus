@@ -33,6 +33,9 @@ export function Footer() {
               <Link href="/for-gp-practices">For GP practices</Link>
             </li>
             <li>
+              <Link href="/about">About</Link>
+            </li>
+            <li>
               <Link href="/contact">Contact</Link>
             </li>
             <li>
