@@ -505,8 +505,48 @@ textarea {
   background: #e7f6e9;
 }
 .form-status {
+  display: block;
+  width: 100%;
   min-height: 3.3rem;
   color: var(--muted);
+}
+.form-status-success {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  align-items: start;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #9bd3c5;
+  border-left: 4px solid var(--teal);
+  border-radius: 0.5rem;
+  color: var(--ink);
+  background: #effaf7;
+}
+.form-status-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--green);
+  stroke: var(--white);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: currentcolor;
+}
+.form-status-icon path {
+  fill: none;
+}
+.form-status-heading,
+.form-status-copy {
+  display: block;
+}
+.form-status-heading {
+  margin: 0 0 0.2rem;
+  color: var(--navy);
+  font-size: 1.05rem;
+}
+.form-status-copy {
+  line-height: 1.5;
 }
 .honeypot {
   position: absolute;

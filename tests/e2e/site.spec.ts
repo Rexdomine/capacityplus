@@ -345,18 +345,45 @@ test("contact form confirms success and resets only after the API confirms", asy
     });
   });
   await page.goto("/contact", { waitUntil: "networkidle" });
+  const submit = page.getByRole("button", { name: "Book a call", exact: true });
+  const before = await submit.boundingBox();
+  expect(before).not.toBeNull();
   await page.getByLabel("Name").fill("QA Reviewer");
   await page.getByLabel("Organisation").fill("CapacityPlus QA");
   await page.getByLabel("Email").fill("qa@example.test");
   await page
     .getByLabel("Short message")
     .fill("This is a non-clinical review enquiry.");
-  await page.getByRole("button", { name: "Book a call", exact: true }).click();
+  await submit.click();
 
-  await expect(page.getByRole("status")).toContainText("has been sent");
+  const confirmation = page.getByRole("status");
+  await expect(confirmation).toHaveClass(/form-status-success/);
+  await expect(
+    confirmation.getByRole("heading", { name: "Enquiry sent" }),
+  ).toBeVisible();
+  await expect(confirmation).toContainText(
+    "Capacity+ has received your enquiry and a member of our team will respond.",
+  );
+  await expect(confirmation.locator("svg")).toHaveAttribute(
+    "aria-hidden",
+    "true",
+  );
+  await expect(confirmation).toHaveAttribute("aria-live", "polite");
+  await expect(confirmation).toHaveAttribute("aria-atomic", "true");
+  const after = await submit.boundingBox();
+  expect(after).not.toBeNull();
+  expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThanOrEqual(0.5);
+  expect(
+    Math.abs((after?.width ?? 0) - (before?.width ?? 0)),
+  ).toBeLessThanOrEqual(0.5);
   await expect(page.getByLabel("Name")).toHaveValue("");
   expect(submitted?.name).toBe("QA Reviewer");
   expect(submitted?.submissionId).toMatch(/^[0-9a-f-]{36}$/i);
+  await page.getByLabel("Name").fill("A new enquiry");
+  await expect(confirmation).not.toHaveClass(/form-status-success/);
+  await expect(confirmation).toHaveText(
+    "Complete the form and Capacity+ will respond to your enquiry.",
+  );
 });
 
 test("contact form locks and retries the same immutable enquiry after uncertain failure", async ({
@@ -409,7 +436,14 @@ test("contact form locks and retries the same immutable enquiry after uncertain 
   await expect.poll(() => submissions.length).toBe(2);
   expect(submissions[1]).toEqual(submissions[0]);
   expect(editWasRejected).toBe(true);
-  await expect(page.getByRole("status")).toContainText("has been sent");
+  const confirmation = page.getByRole("status");
+  await expect(confirmation).toHaveClass(/form-status-success/);
+  await expect(
+    confirmation.getByRole("heading", { name: "Enquiry sent" }),
+  ).toBeVisible();
+  await expect(confirmation).toContainText(
+    "Capacity+ has received your enquiry and a member of our team will respond.",
+  );
   for (const field of [name, organisation, email, message]) {
     await expect(field).toBeEnabled();
     await expect(field).toHaveValue("");
