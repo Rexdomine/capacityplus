@@ -43,10 +43,12 @@ export function validateContact(payload: ContactPayload): ContactErrors {
   return errors;
 }
 
+export const CONTACT_UNCERTAIN_FAILURE_MESSAGE =
+  "We could not confirm the full submission. Capacity+ may already have received your enquiry. Please try again using the same details.";
+
 const failure: ContactSubmitResult = {
   ok: false,
-  message:
-    "Your enquiry could not be sent. Your entries remain in the form so you can try again.",
+  message: CONTACT_UNCERTAIN_FAILURE_MESSAGE,
 };
 
 // Allows both sequential 10-second provider operations to finish server-side.

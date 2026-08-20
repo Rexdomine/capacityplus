@@ -80,7 +80,7 @@ test("fetch submitter returns a generic failure without throwing", async () => {
     assert.deepEqual(result, {
       ok: false,
       message:
-        "Your enquiry could not be sent. Your entries remain in the form so you can try again.",
+        "We could not confirm the full submission. Capacity+ may already have received your enquiry. Please try again using the same details.",
     });
   }
 });
@@ -108,7 +108,7 @@ test("fetch submitter aborts after 30 seconds with a generic failure", async (t)
   assert.deepEqual(await submission, {
     ok: false,
     message:
-      "Your enquiry could not be sent. Your entries remain in the form so you can try again.",
+      "We could not confirm the full submission. Capacity+ may already have received your enquiry. Please try again using the same details.",
   });
 });
 
