@@ -84,3 +84,50 @@ test("fetch submitter returns a generic failure without throwing", async () => {
     });
   }
 });
+
+test("fetch submitter aborts after 30 seconds with a generic failure", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  let signal: AbortSignal | null = null;
+  const submission = fetchContactSubmitter(
+    valid,
+    "123e4567-e89b-42d3-a456-426614174000",
+    1_724_328_000_000,
+    async (_input, init) => {
+      signal = init?.signal ?? null;
+      return await new Promise<Response>((_resolve, reject) => {
+        signal?.addEventListener("abort", () => reject(signal?.reason));
+      });
+    },
+  );
+
+  assert.equal(signal?.aborted, false);
+  t.mock.timers.tick(29_999);
+  assert.equal(signal?.aborted, false);
+  t.mock.timers.tick(1);
+  assert.equal(signal?.aborted, true);
+  assert.deepEqual(await submission, {
+    ok: false,
+    message:
+      "Your enquiry could not be sent. Your entries remain in the form so you can try again.",
+  });
+});
+
+test("fetch submitter clears its timeout after a completed request", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  let signal: AbortSignal | null = null;
+
+  const result = await fetchContactSubmitter(
+    valid,
+    "123e4567-e89b-42d3-a456-426614174000",
+    1_724_328_000_000,
+    async (_input, init) => {
+      signal = init?.signal ?? null;
+      return Response.json({ ok: true });
+    },
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(signal?.aborted, false);
+  t.mock.timers.runAll();
+  assert.equal(signal?.aborted, false);
+});

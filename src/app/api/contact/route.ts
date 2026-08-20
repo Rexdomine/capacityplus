@@ -115,7 +115,7 @@ function isMatchingOrigin(request: Request, expectedOrigin: string) {
   }
 }
 
-/** Uses Vercel's normalized single-value client IP header, never a raw chain. */
+/** Relies on Vercel-normalized x-real-ip; missing headers share the conservative "unknown" limiter bucket. */
 function clientIp(request: Request) {
   const value = request.headers.get("x-real-ip");
   if (value === null) return "unknown";

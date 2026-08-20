@@ -32,6 +32,17 @@ function jsonRequest(body: unknown, headers: Record<string, string> = {}) {
   });
 }
 
+function isolatedDependencies() {
+  return {
+    now: () => now,
+    rateLimiter: createInMemoryRateLimiter({
+      maxRequests: 5,
+      windowMs: 60_000,
+      maxEntries: 10,
+    }),
+  };
+}
+
 test("server validation trims valid fields and enforces strict bounds", () => {
   assert.deepEqual(validateContactRequest(valid), {
     ok: true,
@@ -274,6 +285,7 @@ test("route maps media type, origin, malformed, size, config/provider and succes
       await handleContactRequest(
         new Request("https://capacityx.co.uk/api/contact", { method: "POST" }),
         async () => {},
+        isolatedDependencies(),
       )
     ).status,
     415,
@@ -283,6 +295,7 @@ test("route maps media type, origin, malformed, size, config/provider and succes
       await handleContactRequest(
         jsonRequest(valid, { origin: "https://evil.example" }),
         async () => {},
+        isolatedDependencies(),
       )
     ).status,
     400,
@@ -296,6 +309,7 @@ test("route maps media type, origin, malformed, size, config/provider and succes
           body: "{broken",
         }),
         async () => {},
+        isolatedDependencies(),
       )
     ).status,
     400,
@@ -309,23 +323,47 @@ test("route maps media type, origin, malformed, size, config/provider and succes
           body: "x".repeat(BODY_LIMIT_BYTES + 1),
         }),
         async () => {},
+        isolatedDependencies(),
       )
     ).status,
     413,
   );
   assert.equal(
-    (await handleContactRequest(jsonRequest(valid), async () => {})).status,
+    (
+      await handleContactRequest(
+        jsonRequest(valid),
+        async () => {},
+        isolatedDependencies(),
+      )
+    ).status,
     200,
   );
   assert.equal(
     (
-      await handleContactRequest(jsonRequest(valid), async () => {
-        throw new Error("provider private detail");
-      })
+      await handleContactRequest(
+        jsonRequest(valid),
+        async () => {
+          throw new Error("provider private detail");
+        },
+        isolatedDependencies(),
+      )
     ).status,
     503,
   );
   assert.equal((await POST(jsonRequest({ ...valid, name: "" }))).status, 400);
+
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    assert.equal(
+      (
+        await handleContactRequest(
+          jsonRequest(valid),
+          async () => {},
+          isolatedDependencies(),
+        )
+      ).status,
+      200,
+    );
+  }
 });
 
 test("route accepts one normalized proxy origin and rejects unrelated origins", async () => {

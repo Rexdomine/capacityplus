@@ -49,6 +49,9 @@ const failure: ContactSubmitResult = {
     "Your enquiry could not be sent. Your entries remain in the form so you can try again.",
 };
 
+// Allows both sequential 10-second provider operations to finish server-side.
+const REQUEST_TIMEOUT_MS = 30_000;
+
 /** Posts a contact attempt to the same-origin server endpoint. */
 export async function fetchContactSubmitter(
   payload: ContactPayload,
@@ -56,11 +59,14 @@ export async function fetchContactSubmitter(
   startedAt: number,
   fetcher: typeof fetch = fetch,
 ): Promise<ContactSubmitResult> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     const response = await fetcher("/api/contact", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ ...payload, submissionId, startedAt }),
+      signal: controller.signal,
     });
     if (!response.ok) return failure;
     return {
@@ -69,5 +75,7 @@ export async function fetchContactSubmitter(
     };
   } catch {
     return failure;
+  } finally {
+    clearTimeout(timeout);
   }
 }

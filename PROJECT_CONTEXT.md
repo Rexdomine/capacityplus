@@ -98,7 +98,7 @@ Always label these as **single-site St Giles pilot results, approximately 8,000 
 - `src/app/layout.tsx` references `/images/og-image.jpg`, but that asset was not present in the supplied archive.
 - Google site verification metadata still contains a placeholder value.
 - Twitter/X creator metadata contains a placeholder handle.
-- The contact form currently appears presentational and requires functional review before claiming submissions work.
+- `POST /api/contact` provides the contact form's server-side Brevo delivery path and requires the server-only `BREVO_API_KEY`; missing configuration fails closed with a generic submission failure.
 - External Lottie animations are loaded from `lottie.host`; deployment QA should verify availability and graceful failure.
 - Package installation under the hardened local pnpm policy reported ignored build scripts for `msw` and `sharp`; direct Next.js production build nevertheless completed successfully.
 - The live baseline does not currently return explicit CSP, `X-Content-Type-Options`, frame, referrer or permissions-policy headers. Add these through a reviewed source change before treating the site as launch-hardened.
