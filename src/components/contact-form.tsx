@@ -25,6 +25,8 @@ const fields: Array<Exclude<ContactField, "website">> = [
   "email",
   "message",
 ];
+const initialStatus =
+  "Complete the form and Capacity+ will respond to your enquiry.";
 
 export function ContactForm({
   submitter = fetchContactSubmitter,
@@ -35,6 +37,7 @@ export function ContactForm({
   const [errors, setErrors] = useState<ContactErrors>({});
   const [pending, setPending] = useState(false);
   const [retryLocked, setRetryLocked] = useState(false);
+  const [succeeded, setSucceeded] = useState(false);
   const pendingRef = useRef(false);
   const attemptRef = useRef<{
     readonly payload: Readonly<ContactPayload>;
@@ -42,12 +45,14 @@ export function ContactForm({
     readonly startedAt: number;
   } | null>(null);
   const startedAtRef = useRef(Date.now());
-  const [status, setStatus] = useState(
-    "Complete the form and Capacity+ will respond to your enquiry.",
-  );
+  const [status, setStatus] = useState(initialStatus);
 
   function update(field: ContactField, value: string) {
     if (attemptRef.current) return;
+    if (succeeded) {
+      setSucceeded(false);
+      setStatus(initialStatus);
+    }
     const next = { ...values, [field]: value };
     setValues(next);
     if (errors[field]) {
@@ -68,6 +73,7 @@ export function ContactForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pendingRef.current) return;
+    setSucceeded(false);
     const nextErrors = validateContact(values);
     setErrors(nextErrors);
     const firstInvalid =
@@ -97,16 +103,19 @@ export function ContactForm({
       );
       if (result.ok) {
         setStatus(result.message);
+        setSucceeded(true);
         setValues(initialValues);
         setErrors({});
         attemptRef.current = null;
         setRetryLocked(false);
         startedAtRef.current = Date.now();
       } else {
+        setSucceeded(false);
         setStatus(CONTACT_UNCERTAIN_FAILURE_MESSAGE);
         setRetryLocked(true);
       }
     } catch {
+      setSucceeded(false);
       setStatus(CONTACT_UNCERTAIN_FAILURE_MESSAGE);
       setRetryLocked(true);
     } finally {
@@ -184,9 +193,35 @@ export function ContactForm({
           Do not include patient-identifiable or clinical information.
         </strong>
       </p>
-      <output className="form-status" aria-live="polite">
-        {status}
-      </output>
+      {/* biome-ignore lint/a11y/useSemanticElements: output cannot validly contain the success heading. */}
+      <div
+        role="status"
+        className={`form-status${succeeded ? " form-status-success" : ""}`}
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {succeeded ? (
+          <>
+            <svg
+              className="form-status-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="12" />
+              <path d="m6.5 12 3.5 3.5 7.5-8" />
+            </svg>
+            <div>
+              <h2 className="form-status-heading">Enquiry sent</h2>
+              <span className="form-status-copy">
+                Capacity+ has received your enquiry and a member of our team
+                will respond.
+              </span>
+            </div>
+          </>
+        ) : (
+          status
+        )}
+      </div>
       <button className="button-primary" type="submit" disabled={pending}>
         {pending
           ? "Submitting…"

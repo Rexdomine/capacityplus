@@ -120,6 +120,12 @@ test("email templates escape user content and set exact envelope fields", () => 
   assert.equal(acknowledgement.replyTo, undefined);
 
   for (const email of [internal, acknowledgement]) {
+    assert.match(
+      email.htmlContent,
+      /<img[^>]+src="https:\/\/www\.capacityx\.co\.uk\/images\/capacity-logo-web\.png"[^>]+alt="Capacity\+"[^>]+width="240"[^>]+height="122"[^>]+style="[^"]*display:block[^"]*border:0[^"]*max-width:100%[^"]*width:240px[^"]*height:auto/i,
+    );
+    assert.doesNotMatch(email.htmlContent, />Capacity\+ logo</i);
+    assert.doesNotMatch(email.htmlContent, /Capacity<span[^>]*>\+<\/span>/i);
     assert.match(email.htmlContent, /Capacity\+/);
     assert.match(email.htmlContent, /#[0-9A-Fa-f]{6}/);
     assert.match(email.textContent, /Capacity\+/);
