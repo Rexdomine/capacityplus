@@ -119,19 +119,16 @@ for (const route of publicRoutes) {
   });
 }
 
-test("navigation exposes approved labels and keyboard-safe mobile menu", async ({
+test("navigation groups audience links in an accessible How it works submenu", async ({
   page,
 }, testInfo) => {
   await page.goto("/", { waitUntil: "networkidle" });
   const viewportWidth = testInfo.project.use.viewport?.width ?? 1440;
-  const links = [
-    "Home",
-    "How it works",
+  const primaryLinks = ["Home", "About", "Contact"];
+  const audienceLinks = [
     "For GP practices",
     "For pharmacies",
     "For commissioners",
-    "About",
-    "Contact",
   ];
 
   if (viewportWidth < 1024) {
@@ -140,24 +137,105 @@ test("navigation exposes approved labels and keyboard-safe mobile menu", async (
     await expect(
       page.getByRole("button", { name: "Close menu" }),
     ).toHaveAttribute("aria-expanded", "true");
-    for (const label of links) {
+    for (const label of primaryLinks) {
       await expect(
         page
           .locator("#mobile-menu")
           .getByRole("link", { name: label, exact: true }),
       ).toBeVisible();
     }
+    const submenuButton = page
+      .locator("#mobile-menu")
+      .getByRole("button", { name: "How it works" });
+    await expect(submenuButton).toHaveAttribute("aria-expanded", "false");
+    await submenuButton.click();
+    await expect(submenuButton).toHaveAttribute("aria-expanded", "true");
+    for (const label of audienceLinks) {
+      await expect(
+        page
+          .locator("#mobile-how-it-works-menu")
+          .getByRole("link", { name: label, exact: true }),
+      ).toBeVisible();
+    }
+    await page.keyboard.press("Escape");
+    await expect(submenuButton).toBeFocused();
+    await expect(submenuButton).toHaveAttribute("aria-expanded", "false");
     await page.keyboard.press("Escape");
     await expect(openButton).toBeFocused();
+    await openButton.click();
+    await page
+      .locator("#mobile-menu")
+      .getByRole("button", { name: "How it works" })
+      .click();
+    await page
+      .locator("#mobile-how-it-works-menu")
+      .getByRole("link", { name: "For GP practices", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/for-gp-practices$/);
+    await expect(
+      page.getByRole("button", { name: "Open menu" }),
+    ).toHaveAttribute("aria-expanded", "false");
   } else {
-    for (const label of links) {
+    for (const label of primaryLinks) {
       await expect(
         page
           .locator(".desktop-nav")
           .getByRole("link", { name: label, exact: true }),
       ).toBeVisible();
     }
+    const submenuButton = page
+      .locator(".desktop-nav")
+      .getByRole("button", { name: "How it works" });
+    await expect(submenuButton).toHaveAttribute(
+      "aria-controls",
+      "desktop-how-it-works-menu",
+    );
+    await submenuButton.focus();
+    await page.keyboard.press("Enter");
+    await expect(submenuButton).toHaveAttribute("aria-expanded", "true");
+    for (const label of audienceLinks) {
+      await expect(
+        page
+          .locator("#desktop-how-it-works-menu")
+          .getByRole("link", { name: label, exact: true }),
+      ).toBeVisible();
+    }
+    await page.keyboard.press("Escape");
+    await expect(submenuButton).toBeFocused();
+    await expect(submenuButton).toHaveAttribute("aria-expanded", "false");
   }
+
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test("Escape closes the visible mobile submenu after resizing from desktop", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const desktopSubmenuButton = page
+    .locator(".desktop-nav")
+    .getByRole("button", { name: "How it works" });
+  await desktopSubmenuButton.click();
+  await expect(desktopSubmenuButton).toHaveAttribute("aria-expanded", "true");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const mobileSubmenuButton = page
+    .locator("#mobile-menu")
+    .getByRole("button", { name: "How it works" });
+  await mobileSubmenuButton.click();
+  await expect(mobileSubmenuButton).toHaveAttribute("aria-expanded", "true");
+
+  await page.keyboard.press("Escape");
+
+  await expect(mobileSubmenuButton).toHaveAttribute("aria-expanded", "false");
+  await expect(mobileSubmenuButton).toBeFocused();
 });
 
 test("legacy routes are permanent redirects to approved destinations", async ({
@@ -176,7 +254,7 @@ test("legacy routes are permanent redirects to approved destinations", async ({
   }
 });
 
-test("About presents the real team photos and qualified pilot evidence", async ({
+test("About omits the team while preserving qualified pilot evidence", async ({
   page,
 }) => {
   await page.goto("/about", { waitUntil: "networkidle" });
@@ -186,25 +264,9 @@ test("About presents the real team photos and qualified pilot evidence", async (
     "Radha Muthusamy",
     "Ben Paddick",
   ]) {
-    await expect(
-      page.getByRole("heading", { name, exact: true }),
-    ).toBeVisible();
-    const photo = page.getByRole("img", { name, exact: true });
-    await photo.scrollIntoViewIfNeeded();
-    await expect(photo).toBeVisible();
-    await expect
-      .poll(() =>
-        photo.evaluate((image) => (image as HTMLImageElement).naturalWidth),
-      )
-      .toBeGreaterThan(0);
-    expect(
-      await photo.evaluate(
-        (image) =>
-          (image as HTMLImageElement).naturalWidth ===
-          (image as HTMLImageElement).naturalHeight,
-      ),
-    ).toBe(true);
+    await expect(page.getByText(name, { exact: true })).toHaveCount(0);
   }
+  await expect(page.getByRole("heading", { name: /team/i })).toHaveCount(0);
 
   await expect(
     page.getByText("single-site St Giles pilot", { exact: false }),
