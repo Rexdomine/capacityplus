@@ -30,6 +30,42 @@ const publicRoutes = [
 ] as const;
 
 for (const route of publicRoutes) {
+  test(`${route.path} preserves shared content gutters`, async ({
+    page,
+  }, testInfo) => {
+    const viewportWidth = testInfo.project.use.viewport?.width ?? 1440;
+    test.skip(
+      viewportWidth !== 390 && viewportWidth !== 768,
+      "Mobile and tablet geometry regression",
+    );
+
+    await page.goto(route.path, { waitUntil: "networkidle" });
+
+    const containers = await page
+      .locator(".container:visible")
+      .evaluateAll((elements) =>
+        elements.map((element) => {
+          const { left, right } = element.getBoundingClientRect();
+          return {
+            element: `${element.tagName.toLowerCase()}.${[...element.classList].join(".")}`,
+            left,
+            right,
+          };
+        }),
+      );
+    expect(containers.length).toBeGreaterThan(0);
+    expect(
+      containers.filter(
+        ({ left, right }) => left < 15.5 || right > viewportWidth - 15.5,
+      ),
+    ).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+  });
+
   test(`${route.path} is responsive, accessible and release-safe`, async ({
     page,
   }) => {
