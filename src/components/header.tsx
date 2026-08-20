@@ -9,6 +9,8 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/for-gp-practices", label: "For GP practices" },
+  { href: "/for-pharmacies", label: "For pharmacies" },
+  { href: "/for-commissioners", label: "For commissioners" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];

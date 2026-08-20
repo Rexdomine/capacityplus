@@ -3,6 +3,11 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import {
+  evidenceQualificationErrors,
+  extractVisibleText,
+} from "./public-content-validation.mjs";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const builtMode = process.argv.includes("--built");
 const scanRoots = builtMode
@@ -53,13 +58,6 @@ async function filesWithin(relativeDirectory) {
 
 const files = (await Promise.all(scanRoots.map(filesWithin))).flat();
 const errors = [];
-const evidenceValues = ["150+ ABPMs", "75 GP clinical hours", "£8,000"];
-const qualification = [
-  "single-site St Giles pilot",
-  "approximately 8,000 patients",
-  "year one",
-];
-
 if (builtMode && files.length === 0) {
   errors.push(
     "No built HTML found. Run the production build before --built validation.",
@@ -68,10 +66,7 @@ if (builtMode && files.length === 0) {
 
 for (const file of files) {
   const content = await readFile(path.join(root, file), "utf8");
-  const visibleText = content
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const visibleText = extractVisibleText(content, builtMode);
   for (const phrase of forbidden) {
     if (
       visibleText
@@ -89,18 +84,8 @@ for (const file of files) {
   if (/\b(TODO|FIXME|Lorem ipsum|coming soon)\b/i.test(content)) {
     errors.push(`${file}: placeholder or unfinished public copy`);
   }
-  if (evidenceValues.some((value) => visibleText.includes(value))) {
-    for (const term of qualification) {
-      if (
-        !visibleText
-          .toLocaleLowerCase("en-GB")
-          .includes(term.toLocaleLowerCase("en-GB"))
-      ) {
-        errors.push(
-          `${file}: evidence appears without qualification “${term}”`,
-        );
-      }
-    }
+  for (const term of evidenceQualificationErrors(file, visibleText)) {
+    errors.push(`${file}: evidence appears without qualification “${term}”`);
   }
 }
 

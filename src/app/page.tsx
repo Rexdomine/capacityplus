@@ -92,6 +92,9 @@ export default function Home() {
                 Receive structured referrals and deliver eligible activity under
                 NHS service specifications.
               </p>
+              <Link className="text-link" href="/for-pharmacies">
+                For pharmacies <span aria-hidden="true">→</span>
+              </Link>
             </article>
             <article>
               <h3>NHS commissioners</h3>
@@ -99,6 +102,9 @@ export default function Home() {
                 Support consistent pathways with visible referral and outcome
                 information across local teams.
               </p>
+              <Link className="text-link" href="/for-commissioners">
+                For commissioners <span aria-hidden="true">→</span>
+              </Link>
             </article>
           </div>
         </div>
