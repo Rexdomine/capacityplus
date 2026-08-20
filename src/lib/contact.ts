@@ -11,19 +11,31 @@ export type ContactErrors = Partial<Record<ContactField, string>>;
 export type ContactSubmitResult = { ok: boolean; message: string };
 export type ContactSubmitter = (
   payload: ContactPayload,
+  submissionId: string,
+  startedAt: number,
 ) => Promise<ContactSubmitResult>;
 
 export function validateContact(payload: ContactPayload): ContactErrors {
   const errors: ContactErrors = {};
   if (!payload.name.trim()) errors.name = "Enter your name.";
+  else if (payload.name.trim().length > 100) {
+    errors.name = "Keep your name to 100 characters or fewer.";
+  }
   if (!payload.organisation.trim()) {
     errors.organisation = "Enter your organisation.";
+  } else if (payload.organisation.trim().length > 160) {
+    errors.organisation = "Keep your organisation to 160 characters or fewer.";
   }
-  if (!/^\S+@\S+\.\S+$/.test(payload.email.trim())) {
+  if (
+    payload.email.trim().length > 254 ||
+    !/^[^\s@\r\n]+@[^\s@\r\n]+\.[^\s@\r\n]+$/.test(payload.email.trim())
+  ) {
     errors.email = "Enter a valid email address.";
   }
   if (payload.message.trim().length < 10) {
     errors.message = "Enter a short message of at least 10 characters.";
+  } else if (payload.message.trim().length > 2000) {
+    errors.message = "Keep your message to 2,000 characters or fewer.";
   }
   if (payload.website.trim()) {
     errors.website = "Unable to submit this enquiry.";
@@ -31,8 +43,41 @@ export function validateContact(payload: ContactPayload): ContactErrors {
   return errors;
 }
 
-export const inertContactSubmitter: ContactSubmitter = async () => ({
+export const CONTACT_UNCERTAIN_FAILURE_MESSAGE =
+  "We could not confirm the full submission. Capacity+ may already have received your enquiry. Please try again using the same details.";
+
+const failure: ContactSubmitResult = {
   ok: false,
-  message:
-    "Your enquiry was not sent or stored because the contact service is not yet connected.",
-});
+  message: CONTACT_UNCERTAIN_FAILURE_MESSAGE,
+};
+
+// Allows both sequential 10-second provider operations to finish server-side.
+const REQUEST_TIMEOUT_MS = 30_000;
+
+/** Posts a contact attempt to the same-origin server endpoint. */
+export async function fetchContactSubmitter(
+  payload: ContactPayload,
+  submissionId: string,
+  startedAt: number,
+  fetcher: typeof fetch = fetch,
+): Promise<ContactSubmitResult> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetcher("/api/contact", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...payload, submissionId, startedAt }),
+      signal: controller.signal,
+    });
+    if (!response.ok) return failure;
+    return {
+      ok: true,
+      message: "Thank you. Your enquiry has been sent to Capacity+.",
+    };
+  } catch {
+    return failure;
+  } finally {
+    clearTimeout(timeout);
+  }
+}

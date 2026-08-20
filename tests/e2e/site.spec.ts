@@ -234,9 +234,18 @@ test("About presents the real team photos and qualified pilot evidence", async (
   ).toBeVisible();
 });
 
-test("contact form is explicitly inert and retains the enquiry", async ({
+test("contact form confirms success and resets only after the API confirms", async ({
   page,
 }) => {
+  let submitted: Record<string, unknown> | undefined;
+  await page.route("**/api/contact", async (route) => {
+    submitted = route.request().postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: '{"ok":true}',
+    });
+  });
   await page.goto("/contact", { waitUntil: "networkidle" });
   await page.getByLabel("Name").fill("QA Reviewer");
   await page.getByLabel("Organisation").fill("CapacityPlus QA");
@@ -246,8 +255,70 @@ test("contact form is explicitly inert and retains the enquiry", async ({
     .fill("This is a non-clinical review enquiry.");
   await page.getByRole("button", { name: "Book a call", exact: true }).click();
 
-  await expect(page.getByRole("status")).toContainText("not sent or stored");
-  await expect(page.getByLabel("Name")).toHaveValue("QA Reviewer");
+  await expect(page.getByRole("status")).toContainText("has been sent");
+  await expect(page.getByLabel("Name")).toHaveValue("");
+  expect(submitted?.name).toBe("QA Reviewer");
+  expect(submitted?.submissionId).toMatch(/^[0-9a-f-]{36}$/i);
+});
+
+test("contact form locks and retries the same immutable enquiry after uncertain failure", async ({
+  page,
+}) => {
+  const submissions: Array<Record<string, unknown>> = [];
+  await page.route("**/api/contact", async (route) => {
+    submissions.push(route.request().postDataJSON() as Record<string, unknown>);
+    await route.fulfill({
+      status: submissions.length === 1 ? 503 : 200,
+      contentType: "application/json",
+      body: submissions.length === 1 ? '{"ok":false}' : '{"ok":true}',
+    });
+  });
+  await page.goto("/contact", { waitUntil: "networkidle" });
+  await page.getByLabel("Name").fill("QA Reviewer");
+  await page.getByLabel("Organisation").fill("CapacityPlus QA");
+  await page.getByLabel("Email").fill("qa@example.test");
+  await page
+    .getByLabel("Short message")
+    .fill("This is a non-clinical review enquiry.");
+  const name = page.getByLabel("Name");
+  const organisation = page.getByLabel("Organisation");
+  const email = page.getByLabel("Email");
+  const message = page.getByLabel("Short message");
+  const submit = page.getByRole("button", {
+    name: "Book a call",
+    exact: true,
+  });
+  await submit.click();
+  await expect.poll(() => submissions.length).toBe(1);
+  await expect(page.getByRole("status")).toHaveText(
+    "We could not confirm the full submission. Capacity+ may already have received your enquiry. Please try again using the same details.",
+  );
+  await expect(page.locator('button[type="submit"]')).toHaveText(
+    "Try same enquiry again",
+  );
+  for (const field of [name, organisation, email, message]) {
+    await expect(field).toBeDisabled();
+  }
+  await expect(name).toHaveValue("QA Reviewer");
+  let editWasRejected = false;
+  try {
+    await name.fill("Changed after failure", { timeout: 250 });
+  } catch {
+    editWasRejected = true;
+  }
+  await page.locator('button[type="submit"]').click();
+
+  await expect.poll(() => submissions.length).toBe(2);
+  expect(submissions[1]).toEqual(submissions[0]);
+  expect(editWasRejected).toBe(true);
+  await expect(page.getByRole("status")).toContainText("has been sent");
+  for (const field of [name, organisation, email, message]) {
+    await expect(field).toBeEnabled();
+    await expect(field).toHaveValue("");
+  }
+  await expect(
+    page.getByRole("button", { name: "Book a call", exact: true }),
+  ).toBeEnabled();
 });
 
 test("security headers and review-only noindex routes are enforced", async ({

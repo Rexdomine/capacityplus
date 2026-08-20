@@ -1,13 +1,14 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
+  CONTACT_UNCERTAIN_FAILURE_MESSAGE,
   type ContactErrors,
   type ContactField,
   type ContactPayload,
   type ContactSubmitter,
-  inertContactSubmitter,
+  fetchContactSubmitter,
   validateContact,
 } from "@/lib/contact";
 
@@ -26,18 +27,27 @@ const fields: Array<Exclude<ContactField, "website">> = [
 ];
 
 export function ContactForm({
-  submitter = inertContactSubmitter,
+  submitter = fetchContactSubmitter,
 }: {
   submitter?: ContactSubmitter;
 }) {
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState<ContactErrors>({});
   const [pending, setPending] = useState(false);
+  const [retryLocked, setRetryLocked] = useState(false);
+  const pendingRef = useRef(false);
+  const attemptRef = useRef<{
+    readonly payload: Readonly<ContactPayload>;
+    readonly submissionId: string;
+    readonly startedAt: number;
+  } | null>(null);
+  const startedAtRef = useRef(Date.now());
   const [status, setStatus] = useState(
-    "This form is not connected. Submitting will not send or store your information.",
+    "Complete the form and Capacity+ will respond to your enquiry.",
   );
 
   function update(field: ContactField, value: string) {
+    if (attemptRef.current) return;
     const next = { ...values, [field]: value };
     setValues(next);
     if (errors[field]) {
@@ -57,7 +67,7 @@ export function ContactForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending) return;
+    if (pendingRef.current) return;
     const nextErrors = validateContact(values);
     setErrors(nextErrors);
     const firstInvalid =
@@ -70,20 +80,37 @@ export function ContactForm({
       document.getElementById(firstInvalid)?.focus();
       return;
     }
+    pendingRef.current = true;
     setPending(true);
     setStatus("Submitting your enquiry…");
     try {
-      const result = await submitter(values);
-      setStatus(result.message);
+      attemptRef.current ??= Object.freeze({
+        payload: Object.freeze({ ...values }),
+        submissionId: crypto.randomUUID(),
+        startedAt: startedAtRef.current,
+      });
+      const attempt = attemptRef.current;
+      const result = await submitter(
+        attempt.payload,
+        attempt.submissionId,
+        attempt.startedAt,
+      );
       if (result.ok) {
+        setStatus(result.message);
         setValues(initialValues);
         setErrors({});
+        attemptRef.current = null;
+        setRetryLocked(false);
+        startedAtRef.current = Date.now();
+      } else {
+        setStatus(CONTACT_UNCERTAIN_FAILURE_MESSAGE);
+        setRetryLocked(true);
       }
     } catch {
-      setStatus(
-        "Your enquiry was not sent. Your entries remain in the form so you can try again later.",
-      );
+      setStatus(CONTACT_UNCERTAIN_FAILURE_MESSAGE);
+      setRetryLocked(true);
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
   }
@@ -98,6 +125,7 @@ export function ContactForm({
           tabIndex={-1}
           autoComplete="off"
           value={values.website}
+          disabled={pending || retryLocked}
           onChange={(event) => update("website", event.target.value)}
         />
       </div>
@@ -106,6 +134,7 @@ export function ContactForm({
         name="name"
         value={values.name}
         error={errors.name}
+        disabled={pending || retryLocked}
         onChange={update}
         onBlur={validateField}
         autoComplete="name"
@@ -115,6 +144,7 @@ export function ContactForm({
         name="organisation"
         value={values.organisation}
         error={errors.organisation}
+        disabled={pending || retryLocked}
         onChange={update}
         onBlur={validateField}
         autoComplete="organization"
@@ -125,6 +155,7 @@ export function ContactForm({
         type="email"
         value={values.email}
         error={errors.email}
+        disabled={pending || retryLocked}
         onChange={update}
         onBlur={validateField}
         autoComplete="email"
@@ -136,6 +167,7 @@ export function ContactForm({
           name="message"
           rows={5}
           value={values.message}
+          disabled={pending || retryLocked}
           aria-invalid={Boolean(errors.message)}
           aria-describedby={errors.message ? "message-error" : undefined}
           onChange={(event) => update("message", event.target.value)}
@@ -156,7 +188,11 @@ export function ContactForm({
         {status}
       </output>
       <button className="button-primary" type="submit" disabled={pending}>
-        {pending ? "Submitting…" : "Book a call"}
+        {pending
+          ? "Submitting…"
+          : retryLocked
+            ? "Try same enquiry again"
+            : "Book a call"}
       </button>
     </form>
   );
@@ -168,6 +204,7 @@ type FieldProps = {
   type?: string;
   value: string;
   error?: string;
+  disabled: boolean;
   autoComplete: string;
   onChange: (field: ContactField, value: string) => void;
   onBlur: (field: ContactField) => void;
@@ -179,6 +216,7 @@ function Field({
   type = "text",
   value,
   error,
+  disabled,
   autoComplete,
   onChange,
   onBlur,
@@ -191,6 +229,7 @@ function Field({
         name={name}
         type={type}
         value={value}
+        disabled={disabled}
         autoComplete={autoComplete}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${name}-error` : undefined}
