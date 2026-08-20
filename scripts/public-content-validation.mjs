@@ -87,9 +87,6 @@ function extractBuiltVisibleText(content) {
           nonRenderedElements.has(name) ||
           /(?:^|\s)hidden(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?(?=\s|\/?$)/i.test(
             attributes,
-          ) ||
-          /(?:^|\s)aria-hidden\s*=\s*(?:"true"|'true'|true)(?=\s|\/?$)/i.test(
-            attributes,
           );
 
         if (!voidElements.has(name) && !/\/\s*$/.test(tag)) {

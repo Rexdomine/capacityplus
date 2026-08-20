@@ -20,7 +20,6 @@ for (const [container, markup] of [
   ["style", `<style>${qualificationText}</style>`],
   ["template", `<template>${qualificationText}</template>`],
   ["hidden element", `<div hidden>${qualificationText}</div>`],
-  ["aria-hidden element", `<div aria-hidden="true">${qualificationText}</div>`],
 ] as const) {
   test(`built HTML qualification ignores text inside a ${container}`, () => {
     const visibleText = extractVisibleText(
@@ -37,6 +36,22 @@ for (const [container, markup] of [
     );
   });
 }
+
+test("built HTML qualification includes visually rendered aria-hidden text", () => {
+  const visibleText = extractVisibleText(
+    `<main><div aria-hidden="true">150+ ABPMs delivered. ${qualificationText}</div></main>`,
+    true,
+  );
+
+  assert.equal(visibleText, `150+ ABPMs delivered. ${qualificationText}`);
+  assert.deepEqual(
+    evidenceQualificationErrors(
+      ".next/server/app/for-gp-practices.html",
+      visibleText,
+    ),
+    [],
+  );
+});
 
 test("built HTML validation ignores evidence duplicated in RSC serialization", () => {
   const builtHtml = `<main><p>${approvedPharmacyPilotSentence}</p></main>
