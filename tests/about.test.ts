@@ -33,18 +33,15 @@ function readLossyWebpDimensions(asset: Buffer) {
   };
 }
 
-test("About source presents all approved team members with truthful image text", async () => {
+test("About source temporarily omits the team section and team claims", async () => {
   const source = await readFile("src/app/about/page.tsx", "utf8");
 
   for (const member of team) {
-    assert.ok(source.includes(member.name), `Missing ${member.name}`);
-    assert.ok(source.includes(member.role), `Missing ${member.role}`);
-    assert.match(source, new RegExp(`image: "/images/team/${member.file}"`));
+    assert.ok(!source.includes(member.name), `Still presents ${member.name}`);
+    assert.ok(!source.includes(member.role), `Still presents ${member.role}`);
   }
-  assert.match(source, /alt=\{member\.name\}/);
-  assert.match(source, /width=\{640\}/);
-  assert.match(source, /height=\{640\}/);
-  assert.match(source, /sizes=/);
+  assert.doesNotMatch(source, /team-section|team-title|team\.map/);
+  assert.doesNotMatch(source, /Meet the team|The team behind/i);
 });
 
 test("About source keeps clinical and pilot evidence safely qualified", async () => {
@@ -63,9 +60,6 @@ test("About source keeps clinical and pilot evidence safely qualified", async ()
     "registered pharmacy professionals within host-practice governance",
     "Pharmacy technicians work to protocol",
     "prescription change requires pharmacist or prescriber sign-off",
-    "anti-money laundering and counter-terrorist financing",
-    "IFRS 9",
-    "BCBS 239",
   ]) {
     assert.ok(text.includes(phrase), `Missing evidence boundary: ${phrase}`);
   }
@@ -77,6 +71,7 @@ test("About has route metadata, a canonical and only the approved conversion CTA
 
   assert.match(source, /title: "About Capacity\+"/);
   assert.match(source, /alternates: \{ canonical: "\/about" \}/);
+  assert.doesNotMatch(source, /description:\s*["'].*team/i);
   assert.match(source, /<BookCallLink \/>/);
   assert.doesNotMatch(source, /Book a demo|Schedule a call|Request a demo/i);
 });

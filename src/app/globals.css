@@ -151,12 +151,57 @@ textarea {
   align-items: center;
   gap: 1.6rem;
 }
-.desktop-nav > a:not(.button-primary) {
+.desktop-nav > a:not(.button-primary),
+.submenu-button {
   font-weight: 700;
   text-decoration: none;
 }
-.desktop-nav > a:hover {
+.desktop-nav > a:hover,
+.submenu-button:hover {
   color: var(--teal);
+}
+.nav-submenu {
+  position: relative;
+}
+.submenu-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--navy);
+  font: inherit;
+  cursor: pointer;
+}
+.submenu-button svg {
+  width: 1rem;
+  transition: transform 0.15s ease;
+}
+.submenu-button[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.submenu-panel a {
+  display: block;
+  white-space: nowrap;
+}
+.desktop-submenu {
+  position: absolute;
+  top: calc(100% + 0.8rem);
+  left: 0;
+  min-width: 15rem;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: var(--white);
+  box-shadow: 0 18px 28px rgba(5, 34, 53, 0.14);
+}
+.desktop-submenu a {
+  padding: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 .menu-button {
   display: grid;
@@ -182,6 +227,17 @@ textarea {
   padding: 0.8rem;
   font-weight: 700;
   text-decoration: none;
+}
+.mobile-submenu-button {
+  padding: 0.8rem;
+}
+.mobile-submenu {
+  margin: 0 0.8rem 0.35rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--teal-light);
+}
+.mobile-submenu a {
+  white-space: normal;
 }
 .hero {
   padding: clamp(4rem, 9vw, 7rem) 0;

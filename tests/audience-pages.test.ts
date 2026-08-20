@@ -329,6 +329,11 @@ test("audience navigation and sitemap contain all approved routes", async () => 
     assert.ok(header.includes(href) && header.includes(label));
     assert.ok(footer.includes(href) && footer.includes(label));
   }
+  assert.match(header, /aria-controls="desktop-how-it-works-menu"/);
+  assert.match(header, /aria-controls="mobile-how-it-works-menu"/);
+  assert.match(header, /aria-expanded=/);
+  assert.match(header, /event\.key (?:===|!==) "Escape"/);
+  assert.match(header, /submenuButtonRef\.current\?\.focus\(\)/);
   assert.deepEqual(
     sitemap().map(({ url }) => new URL(url).pathname),
     [
