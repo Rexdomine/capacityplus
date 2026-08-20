@@ -53,10 +53,18 @@ test("site URL normalization is safe and removes path trailing slashes", () => {
   );
 });
 
-test("sitemap contains the five approved public routes, including About", () => {
+test("sitemap contains the seven approved public routes, including audience pages", () => {
   assert.deepEqual(
     sitemap().map(({ url }) => new URL(url).pathname),
-    ["/", "/how-it-works", "/for-gp-practices", "/about", "/contact"],
+    [
+      "/",
+      "/how-it-works",
+      "/for-gp-practices",
+      "/for-pharmacies",
+      "/for-commissioners",
+      "/about",
+      "/contact",
+    ],
   );
 });
 

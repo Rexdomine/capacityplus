@@ -12,6 +12,14 @@ const publicRoutes = [
     canonical: "https://capacityplus.vercel.app/for-gp-practices",
   },
   {
+    path: "/for-pharmacies",
+    canonical: "https://capacityplus.vercel.app/for-pharmacies",
+  },
+  {
+    path: "/for-commissioners",
+    canonical: "https://capacityplus.vercel.app/for-commissioners",
+  },
+  {
     path: "/about",
     canonical: "https://capacityplus.vercel.app/about",
   },
@@ -120,6 +128,8 @@ test("navigation exposes approved labels and keyboard-safe mobile menu", async (
     "Home",
     "How it works",
     "For GP practices",
+    "For pharmacies",
+    "For commissioners",
     "About",
     "Contact",
   ];
