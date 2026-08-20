@@ -89,7 +89,7 @@ textarea {
   margin-inline: auto;
 }
 .narrow {
-  width: min(100%, 48rem);
+  max-width: 48rem;
 }
 .section,
 .evidence,
