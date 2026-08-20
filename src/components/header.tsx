@@ -71,7 +71,10 @@ export function Header() {
               className="submenu-button"
               aria-expanded={desktopSubmenuOpen}
               aria-controls="desktop-how-it-works-menu"
-              onClick={() => setDesktopSubmenuOpen((current) => !current)}
+              onClick={() => {
+                setMobileSubmenuOpen(false);
+                setDesktopSubmenuOpen((current) => !current);
+              }}
             >
               How it works <ChevronDown aria-hidden="true" />
             </button>
@@ -108,6 +111,7 @@ export function Header() {
           aria-controls="mobile-menu"
           aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => {
+            setDesktopSubmenuOpen(false);
             setOpen((current) => !current);
             setMobileSubmenuOpen(false);
           }}
@@ -124,7 +128,10 @@ export function Header() {
             className="submenu-button mobile-submenu-button"
             aria-expanded={mobileSubmenuOpen}
             aria-controls="mobile-how-it-works-menu"
-            onClick={() => setMobileSubmenuOpen((current) => !current)}
+            onClick={() => {
+              setDesktopSubmenuOpen(false);
+              setMobileSubmenuOpen((current) => !current);
+            }}
           >
             How it works <ChevronDown aria-hidden="true" />
           </button>

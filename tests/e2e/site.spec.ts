@@ -212,6 +212,32 @@ test("navigation groups audience links in an accessible How it works submenu", a
   ).toBe(true);
 });
 
+test("Escape closes the visible mobile submenu after resizing from desktop", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const desktopSubmenuButton = page
+    .locator(".desktop-nav")
+    .getByRole("button", { name: "How it works" });
+  await desktopSubmenuButton.click();
+  await expect(desktopSubmenuButton).toHaveAttribute("aria-expanded", "true");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const mobileSubmenuButton = page
+    .locator("#mobile-menu")
+    .getByRole("button", { name: "How it works" });
+  await mobileSubmenuButton.click();
+  await expect(mobileSubmenuButton).toHaveAttribute("aria-expanded", "true");
+
+  await page.keyboard.press("Escape");
+
+  await expect(mobileSubmenuButton).toHaveAttribute("aria-expanded", "false");
+  await expect(mobileSubmenuButton).toBeFocused();
+});
+
 test("legacy routes are permanent redirects to approved destinations", async ({
   request,
 }) => {
