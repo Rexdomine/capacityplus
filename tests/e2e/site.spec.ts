@@ -290,11 +290,15 @@ test("contact form locks and retries the same immutable enquiry after uncertain 
   });
   await submit.click();
   await expect.poll(() => submissions.length).toBe(1);
-  const failureStatus = await page.getByRole("status").textContent();
-  const retryLabel = await page.locator('button[type="submit"]').textContent();
-  const lockedFields = await Promise.all(
-    [name, organisation, email, message].map((field) => field.isDisabled()),
+  await expect(page.getByRole("status")).toHaveText(
+    "We could not confirm the full submission. Capacity+ may already have received your enquiry. Please try again using the same details.",
   );
+  await expect(page.locator('button[type="submit"]')).toHaveText(
+    "Try same enquiry again",
+  );
+  for (const field of [name, organisation, email, message]) {
+    await expect(field).toBeDisabled();
+  }
   await expect(name).toHaveValue("QA Reviewer");
   let editWasRejected = false;
   try {
@@ -307,11 +311,6 @@ test("contact form locks and retries the same immutable enquiry after uncertain 
   await expect.poll(() => submissions.length).toBe(2);
   expect(submissions[1]).toEqual(submissions[0]);
   expect(editWasRejected).toBe(true);
-  expect(lockedFields).toEqual([true, true, true, true]);
-  expect(retryLabel).toBe("Try same enquiry again");
-  expect(failureStatus).toBe(
-    "We could not confirm the full submission. Capacity+ may already have received your enquiry. Please try again using the same details.",
-  );
   await expect(page.getByRole("status")).toContainText("has been sent");
   for (const field of [name, organisation, email, message]) {
     await expect(field).toBeEnabled();
