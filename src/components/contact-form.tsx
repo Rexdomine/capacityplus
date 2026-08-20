@@ -1,13 +1,13 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   type ContactErrors,
   type ContactField,
   type ContactPayload,
   type ContactSubmitter,
-  inertContactSubmitter,
+  fetchContactSubmitter,
   validateContact,
 } from "@/lib/contact";
 
@@ -26,15 +26,18 @@ const fields: Array<Exclude<ContactField, "website">> = [
 ];
 
 export function ContactForm({
-  submitter = inertContactSubmitter,
+  submitter = fetchContactSubmitter,
 }: {
   submitter?: ContactSubmitter;
 }) {
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState<ContactErrors>({});
   const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
+  const submissionIdRef = useRef<string | null>(null);
+  const startedAtRef = useRef(Date.now());
   const [status, setStatus] = useState(
-    "This form is not connected. Submitting will not send or store your information.",
+    "Complete the form and Capacity+ will respond to your enquiry.",
   );
 
   function update(field: ContactField, value: string) {
@@ -57,7 +60,7 @@ export function ContactForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending) return;
+    if (pendingRef.current) return;
     const nextErrors = validateContact(values);
     setErrors(nextErrors);
     const firstInvalid =
@@ -70,20 +73,29 @@ export function ContactForm({
       document.getElementById(firstInvalid)?.focus();
       return;
     }
+    pendingRef.current = true;
     setPending(true);
     setStatus("Submitting your enquiry…");
     try {
-      const result = await submitter(values);
+      submissionIdRef.current ??= crypto.randomUUID();
+      const result = await submitter(
+        values,
+        submissionIdRef.current,
+        startedAtRef.current,
+      );
       setStatus(result.message);
       if (result.ok) {
         setValues(initialValues);
         setErrors({});
+        submissionIdRef.current = null;
+        startedAtRef.current = Date.now();
       }
     } catch {
       setStatus(
         "Your enquiry was not sent. Your entries remain in the form so you can try again later.",
       );
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
   }

@@ -3,7 +3,7 @@ import test from "node:test";
 
 import {
   type ContactPayload,
-  inertContactSubmitter,
+  fetchContactSubmitter,
   validateContact,
 } from "../src/lib/contact";
 
@@ -37,11 +37,50 @@ test("honeypot submissions are rejected", () => {
   });
 });
 
-test("default adapter is inert and confirms no send or storage", async () => {
-  const result = await inertContactSubmitter(valid);
+test("fetch submitter posts typed JSON and reports confirmed success", async () => {
+  let request: { input: string; init?: RequestInit } | undefined;
+  const result = await fetchContactSubmitter(
+    valid,
+    "123e4567-e89b-42d3-a456-426614174000",
+    1_724_328_000_000,
+    async (input, init) => {
+      request = { input: String(input), init };
+      return Response.json({ ok: true });
+    },
+  );
+
   assert.deepEqual(result, {
-    ok: false,
-    message:
-      "Your enquiry was not sent or stored because the contact service is not yet connected.",
+    ok: true,
+    message: "Thank you. Your enquiry has been sent to Capacity+.",
   });
+  assert.equal(request?.input, "/api/contact");
+  assert.equal(request?.init?.method, "POST");
+  assert.equal(
+    new Headers(request?.init?.headers).get("content-type"),
+    "application/json",
+  );
+  assert.deepEqual(JSON.parse(String(request?.init?.body)), {
+    ...valid,
+    submissionId: "123e4567-e89b-42d3-a456-426614174000",
+    startedAt: 1_724_328_000_000,
+  });
+});
+
+test("fetch submitter returns a generic failure without throwing", async () => {
+  for (const response of [
+    new Response(null, { status: 503 }),
+    new Response("not json", { status: 400 }),
+  ]) {
+    const result = await fetchContactSubmitter(
+      valid,
+      "123e4567-e89b-42d3-a456-426614174000",
+      1_724_328_000_000,
+      async () => response,
+    );
+    assert.deepEqual(result, {
+      ok: false,
+      message:
+        "Your enquiry could not be sent. Your entries remain in the form so you can try again.",
+    });
+  }
 });

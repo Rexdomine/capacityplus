@@ -234,9 +234,18 @@ test("About presents the real team photos and qualified pilot evidence", async (
   ).toBeVisible();
 });
 
-test("contact form is explicitly inert and retains the enquiry", async ({
+test("contact form confirms success and resets only after the API confirms", async ({
   page,
 }) => {
+  let submitted: Record<string, unknown> | undefined;
+  await page.route("**/api/contact", async (route) => {
+    submitted = route.request().postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: '{"ok":true}',
+    });
+  });
   await page.goto("/contact", { waitUntil: "networkidle" });
   await page.getByLabel("Name").fill("QA Reviewer");
   await page.getByLabel("Organisation").fill("CapacityPlus QA");
@@ -246,8 +255,38 @@ test("contact form is explicitly inert and retains the enquiry", async ({
     .fill("This is a non-clinical review enquiry.");
   await page.getByRole("button", { name: "Book a call", exact: true }).click();
 
-  await expect(page.getByRole("status")).toContainText("not sent or stored");
+  await expect(page.getByRole("status")).toContainText("has been sent");
+  await expect(page.getByLabel("Name")).toHaveValue("");
+  expect(submitted?.name).toBe("QA Reviewer");
+  expect(submitted?.submissionId).toMatch(/^[0-9a-f-]{36}$/i);
+});
+
+test("contact form retains values and submission reference after provider failure", async ({
+  page,
+}) => {
+  const submissionIds: string[] = [];
+  await page.route("**/api/contact", async (route) => {
+    submissionIds.push(route.request().postDataJSON().submissionId);
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: '{"ok":false}',
+    });
+  });
+  await page.goto("/contact", { waitUntil: "networkidle" });
+  await page.getByLabel("Name").fill("QA Reviewer");
+  await page.getByLabel("Organisation").fill("CapacityPlus QA");
+  await page.getByLabel("Email").fill("qa@example.test");
+  await page
+    .getByLabel("Short message")
+    .fill("This is a non-clinical review enquiry.");
+  const submit = page.getByRole("button", { name: "Book a call", exact: true });
+  await submit.click();
+  await expect(page.getByRole("status")).toContainText("could not be sent");
   await expect(page.getByLabel("Name")).toHaveValue("QA Reviewer");
+  await submit.click();
+  await expect.poll(() => submissionIds.length).toBe(2);
+  expect(submissionIds[1]).toBe(submissionIds[0]);
 });
 
 test("security headers and review-only noindex routes are enforced", async ({
